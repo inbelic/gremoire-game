@@ -13,11 +13,11 @@ import Internal.Game.Types
 import Core.Views (CompiledWindows)
 
 peek :: Game -> CompiledWindows -> GameState
-peek (Game stck hist crds) = GameState stck hist . view crds
+peek (Game stck hist crds) = uncurry (GameState stck hist) . view crds
 
 isStackEmpty :: GameState -> Bool
-isStackEmpty (GameState stck _ _) = null stck
+isStackEmpty (GameState stck _ _ _) = null stck
 
 noAbilitiesTriggering :: GameState -> Bool
-noAbilitiesTriggering (GameState _ hist _)
+noAbilitiesTriggering (GameState _ hist _ _)
   = null . current $ hist

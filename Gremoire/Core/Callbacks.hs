@@ -10,7 +10,7 @@ import Internal.Misc
 import Internal.Game.Load (LoadInfo)
 import Internal.Game.Types
 import qualified Data.ByteString as B -- (ByteString)
-import qualified Data.Map as Map (Map, foldrWithKey, lookup)
+import qualified Data.Map as Map (Map, foldrWithKey, lookup, intersectionWith)
 
 -- Here we can define any custom ways of how to display the current game
 -- state that will be sent to the players
@@ -27,15 +27,25 @@ import qualified Data.Map as Map (Map, foldrWithKey, lookup)
 -- N_i < 255.
 
 displayState :: LoadInfo -> GameState -> B.ByteString
-displayState _ (GameState _ _ cardState)
+displayState _ (GameState _ _ cardState abilityState)
   = B.concat . replicate (numberPlayers + 1)
-  . tagSize . Map.foldrWithKey displayFieldMap B.empty $ cardState
+  . tagSize . Map.foldrWithKey displayCard B.empty
+  . Map.intersectionWith (,) cardState
+  $ abilityState
   where
-    displayFieldMap :: CardID -> FieldMap -> B.ByteString -> B.ByteString
-    displayFieldMap (CardID cID) fm acc
-      = B.cons (u8ToEnum cID)
-      . tagSize
-      $ Map.foldrWithKey displayValue acc fm
+    displayCard :: CardID -> (FieldMap, [StatementID]) -> B.ByteString
+                -> B.ByteString
+    displayCard (CardID cID) (fm, stmtIDs) = B.append cardBytes
+        where
+          cardBytes
+            = B.cons (u8ToEnum cID)
+            $ B.append (displayFieldMap fm) (displayStmtIDs stmtIDs)
+
+    displayStmtIDs :: [StatementID] -> B.ByteString
+    displayStmtIDs = tagSize . foldr (B.cons . u8ToEnum . statementID) B.empty
+
+    displayFieldMap :: FieldMap -> B.ByteString
+    displayFieldMap fm = tagSize $ Map.foldrWithKey displayValue B.empty fm
 
     displayValue :: Field -> U8 -> B.ByteString -> B.ByteString
     displayValue field val

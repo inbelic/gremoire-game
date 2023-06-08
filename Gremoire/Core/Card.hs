@@ -27,9 +27,10 @@ import Internal.Game.Types
 import qualified Data.Map as Map
   ( Map, empty, lookup, adjust
   , insert, insertWith
-  , foldrWithKey, map, filter
+  , foldr, foldrWithKey, map, filter
   , intersection , intersectionWith
   )
+import Data.Maybe (catMaybes)
 
 -- Create a new empty card
 create :: Card
@@ -109,10 +110,14 @@ equip ablty = Change $ \crd -> ([Equip], equip' ablty crd)
 
 -- Given the Cards and the corresponding filters we can create our snapshot
 -- of the current state of all the card field values
-view :: Cards -> CompiledWindows -> CardState
-view crds = foldr (view' crds) init . getWindows
+view :: Cards -> CompiledWindows -> (CardState, AbilityState)
+view crds = (, as) . foldr (view' crds) init . getWindows
   where
     init = Map.map (const Map.empty) crds
+    as = Map.map ( catMaybes  -- filter out the abilities without a statement id
+                 . Map.foldr ((:) . getStatementID) []  -- retreive the statement ids
+                 . abilities) -- get abilities from card
+                 crds
 
     view' :: Cards -> Window -> CardState -> CardState
     view' crds (Window fld filtrate) cs

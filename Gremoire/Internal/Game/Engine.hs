@@ -84,7 +84,7 @@ resolveTargeted :: LoadInfo -> GameState -> CardID -> AbilityID
 resolveTargeted loadInfo gameState cID aID targets conn (Game stck hist crds)
   = case lookupAbility cID aID crds of
       Nothing -> undefined    -- Should crash, it is a bug
-      (Just (Ability _ _ guard resolves _)) -> do
+      (Just (Ability _ _ _ guard resolves _)) -> do
         let (hist', crds')
               = foldr (resolveResolve gameState cID) (hist, crds)
               . filter (validGuard gameState guard cID)

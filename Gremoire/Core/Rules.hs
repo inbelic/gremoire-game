@@ -11,7 +11,7 @@ import Internal.Game.Types
 import qualified Data.Map as Map (Map, fromList, lookup, filter, keys)
 
 ruleCardID :: CardID
-ruleCardID = CardID . U8 $ 0
+ruleCardID = CardID . U8 $ 1
 
 baseRules :: Card
 baseRules =
@@ -23,11 +23,11 @@ baseRules =
     abltys = [incrementPhase]
 
 incrementPhase :: Ability
-incrementPhase = Ability OnTrigger trg grd rslvs rulesCard
+incrementPhase = Ability Nothing OnTrigger trg grd rslvs rulesCard
   where
     trg = Trigger $ \_ gs -> isStackEmpty gs && noAbilitiesTriggering gs
     grd = Guard $ \_ _ gs -> isStackEmpty gs && noAbilitiesTriggering gs
-    rslv = Resolve $ \_ _ (GameState _ _ cs) ->
+    rslv = Resolve $ \_ _ (GameState _ _ cs _) ->
             case u8ToEnum . check ruleCardID Phase (enumToU8 Night) $ cs of
               Night -> set Phase $ enumToU8 Morning
               phase -> set Phase . enumToU8 . succ $ phase

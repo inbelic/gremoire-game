@@ -53,6 +53,7 @@ data Card
   }
 type Cards = Map.Map CardID Card
 type CardState = Map.Map CardID FieldMap
+type AbilityState = Map.Map CardID [StatementID]
 
 -- We can then define our game structure that will keep track of our state
 data Game = Game Stack History Cards
@@ -60,6 +61,7 @@ data GameState = GameState
   { getStack    :: Stack
   , getHistory  :: History
   , getCS       :: CardState
+  , getAS       :: AbilityState
   }
 
 -- To allow for cards to trigger or react from particular game actions we need
@@ -90,13 +92,20 @@ instance Semigroup Change where
 instance Monoid Change where
   mempty = Change ([], )
 
+-- A statement id allows the clients to associate a statement (a string) to
+-- the corresponding ability if it has one to display to the user
+newtype StatementID = StatementID
+  { statementID :: U8
+  }
+
 -- Ability related things
 data Ability = Ability
-  { getTiming     :: Timing
-  , getTrigger    :: Trigger
-  , getGuard      :: Guard
-  , getResolves   :: Resolves
-  , getTargeting  :: Targeting
+  { getStatementID :: Maybe StatementID
+  , getTiming      :: Timing
+  , getTrigger     :: Trigger
+  , getGuard       :: Guard
+  , getResolves    :: Resolves
+  , getTargeting   :: Targeting
   }
 type AbilityMap = Map.Map AbilityID Ability
 
