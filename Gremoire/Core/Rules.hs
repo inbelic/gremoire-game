@@ -23,7 +23,7 @@ baseRules =
     abltys = [incrementPhase]
 
 incrementPhase :: Ability
-incrementPhase = Ability Nothing OnTrigger trg grd rslvs rulesCard
+incrementPhase = Ability (Just . StatementID $  U8 0) OnTrigger trg grd rslvs rulesCard
   where
     trg = Trigger $ \_ gs -> isStackEmpty gs && noAbilitiesTriggering gs
     grd = Guard $ \_ _ gs -> isStackEmpty gs && noAbilitiesTriggering gs

@@ -114,10 +114,15 @@ view :: Cards -> CompiledWindows -> (CardState, AbilityState)
 view crds = (, as) . foldr (view' crds) init . getWindows
   where
     init = Map.map (const Map.empty) crds
-    as = Map.map ( catMaybes  -- filter out the abilities without a statement id
-                 . Map.foldr ((:) . getStatementID) []  -- retreive the statement ids
+    as = Map.map ( Map.foldrWithKey filterNothings Map.empty -- filter out the abilities without a statement id
+                 . Map.map getStatementID  -- retreive the statement ids
                  . abilities) -- get abilities from card
                  crds
+
+    filterNothings :: AbilityID -> Maybe StatementID -> Map.Map AbilityID StatementID
+                   -> Map.Map AbilityID StatementID
+    filterNothings cID Nothing = id
+    filterNothings cID (Just stmtID) = Map.insert cID stmtID
 
     view' :: Cards -> Window -> CardState -> CardState
     view' crds (Window fld filtrate) cs

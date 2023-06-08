@@ -53,7 +53,8 @@ data Card
   }
 type Cards = Map.Map CardID Card
 type CardState = Map.Map CardID FieldMap
-type AbilityState = Map.Map CardID [StatementID]
+type AbilityState = Map.Map CardID StmtMap
+type StmtMap = Map.Map AbilityID StatementID
 
 -- We can then define our game structure that will keep track of our state
 data Game = Game Stack History Cards

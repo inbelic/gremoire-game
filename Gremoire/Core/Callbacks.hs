@@ -33,16 +33,21 @@ displayState _ (GameState _ _ cardState abilityState)
   . Map.intersectionWith (,) cardState
   $ abilityState
   where
-    displayCard :: CardID -> (FieldMap, [StatementID]) -> B.ByteString
+    displayCard :: CardID -> (FieldMap, StmtMap) -> B.ByteString
                 -> B.ByteString
     displayCard (CardID cID) (fm, stmtIDs) = B.append cardBytes
         where
           cardBytes
             = B.cons (u8ToEnum cID)
-            $ B.append (displayFieldMap fm) (displayStmtIDs stmtIDs)
+            $ B.append (displayFieldMap fm) (displayStmtMap stmtIDs)
 
-    displayStmtIDs :: [StatementID] -> B.ByteString
-    displayStmtIDs = tagSize . foldr (B.cons . u8ToEnum . statementID) B.empty
+    displayStmtMap :: StmtMap -> B.ByteString
+    displayStmtMap = tagSize . Map.foldrWithKey displayStmt B.empty
+
+    displayStmt :: AbilityID -> StatementID -> B.ByteString -> B.ByteString
+    displayStmt (AbilityID aID) (StatementID sID)
+      = B.cons (u8ToEnum aID)
+      . B.cons (u8ToEnum sID)
 
     displayFieldMap :: FieldMap -> B.ByteString
     displayFieldMap fm = tagSize $ Map.foldrWithKey displayValue B.empty fm
