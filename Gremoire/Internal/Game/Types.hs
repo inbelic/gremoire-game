@@ -20,14 +20,14 @@ ruleCardID = CardID . U8 $ 0
 newtype AbilityID = AbilityID
   { abilityID :: U8
   }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- Allows us to query an ability's target without needing to define an
 -- instance of Eq Target
 newtype TargetID = TargetID
   { targetID ::  U8
   }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- An Eval is how we will evaluate a fields value when we want to create
 -- the given state of the Cards
@@ -79,6 +79,7 @@ data Alteration
   | Equip               -- We gave the card an ability
   | Created             -- This card was created as a token
   | Reload              -- Retrun Card to its original state
+  deriving Show
 
 -- A change can consist of numerous alterations
 -- and we can wrap it in a newtype to allow for monoid notation to combine
@@ -196,6 +197,11 @@ data Header
   | Assigned Owner CardID AbilityID TargetMap
   | Targeted Owner CardID AbilityID TargetedMap
 
+instance Show Header where
+  show (Unassigned o cID aID)  = "u" ++ show o ++ ":" ++ show cID ++ "," ++ show aID
+  show (Assigned o cID aID _ ) = "a" ++ show o ++ ":" ++ show cID ++ "," ++ show aID
+  show (Targeted o cID aID _ ) = "t" ++ show o ++ ":" ++ show cID ++ "," ++ show aID
+
 -- Create datatype allows us to denote if we should Create a new card for the
 -- ability to be applied to or to apply it to an existing card
 data Create a = Create | Existing a
@@ -211,7 +217,7 @@ data Target
   | Inquire Range       -- We will need to request a target from the range
   | Random Range        -- We will request a random target from the range
   | Void                -- We will need to create a new card for the ability
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 -- History related things
 -- A history records 'Events' of what has occured throughout the game.
@@ -224,6 +230,8 @@ data Target
 newtype History = History
   { history :: ([Event], [Event])
   }
+  deriving Show
 
 -- An event records an Alteration that the first CardID did to the second CardID
 data Event = Event CardID CardID Alteration
+  deriving Show

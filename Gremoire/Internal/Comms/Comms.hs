@@ -158,14 +158,13 @@ fillHeaders = map ((,[]) . enumToU8)
 -- So we can route all the owners headers together into one request
 -- we will group them here
 groupHeaders :: Header -> [(Owner, [Header])] -> [(Owner, [Header])]
-groupHeaders hdr@(Unassigned owner _ _) = foldr (ownerMap owner hdr) []
-groupHeaders hdr@(Assigned owner _ _ _) = foldr (ownerMap owner hdr) []
+groupHeaders hdr@(Unassigned owner _ _) = map (ownerMap owner hdr)
+groupHeaders hdr@(Assigned owner _ _ _) = map (ownerMap owner hdr)
 
-ownerMap :: Owner -> Header -> (Owner, [Header]) -> [(Owner, [Header])]
-         -> [(Owner, [Header])]
-ownerMap owner hdr (otherOwner, hdrs) acc
-  | owner == otherOwner = (owner, hdr : hdrs) : acc
-  | otherwise = (owner, hdrs) : acc
+ownerMap :: Owner -> Header -> (Owner, [Header]) -> (Owner, [Header])
+ownerMap owner hdr (otherOwner, hdrs)
+  | owner == otherOwner = (owner, hdr : hdrs)
+  | otherwise = (otherOwner, hdrs)
       
 -- We will got through our bytestring and split the requests into their
 -- appropriate users
