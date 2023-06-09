@@ -6,9 +6,9 @@ module Core.CardState
 -- a cardstate that has been evaluated
 
 import Core.Fields
-import Core.Views
+import Core.Cut
 
-import Internal.Bytes (U8(..))
+import Internal.Bytes
 import Internal.Game.Types (CardID, CardState)
 import qualified Data.Map as Map (Map, lookup)
 

@@ -19,10 +19,10 @@ module Core.Card
 
 import Core.CardState (check)
 import Core.Fields (Field(Owner))
-import Core.Views (CompiledWindows(..), Window(..), Cut(..), trim)
 import Internal.Bytes (U8(..))
 import Internal.Misc (getNextKey)
 import Internal.Game.Types
+import Internal.Game.Views (CompiledWindows(..), Window(..), Cut(..), trim)
 
 import qualified Data.Map as Map
   ( Map, empty, lookup, adjust

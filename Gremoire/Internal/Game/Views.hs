@@ -1,4 +1,4 @@
-module Core.Views
+module Internal.Game.Views
   ( Window(..)
   , CompiledWindows(..)
   , Mask(..)
@@ -18,7 +18,7 @@ module Core.Views
 
 import Core.Fields
 import Internal.Bytes (U8)
-import Internal.Game.Cut
+import Core.Cut
 import qualified Data.Map as Map (filterWithKey)
 
 -- When we want to evaluate the fields of a card when viewing the cards we will

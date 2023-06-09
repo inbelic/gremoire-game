@@ -9,10 +9,10 @@ import qualified Data.ByteString as B (ByteString, cons, length)
 
 getNextKey :: (k -> U8) -> Map.Map k a -> U8
 getNextKey f = (+) 1 . maximum' . map f . Map.keys
-  where
-    maximum' :: [U8] -> U8
-    maximum' [] = U8 0
-    maximum' xs = maximum xs
+  
+maximum' :: [U8] -> U8
+maximum' [] = U8 0
+maximum' xs = maximum xs
 
 reorder :: [a] -> [Int] -> Maybe [a]
 reorder elems idxs

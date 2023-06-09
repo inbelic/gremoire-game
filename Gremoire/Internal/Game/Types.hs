@@ -1,7 +1,7 @@
 module Internal.Game.Types where
 
 import Core.Fields (Field, FieldMap, Owner)
-import Internal.Bytes (U8)
+import Internal.Bytes (U8(..))
 import qualified Data.Map as Map (Map)
 
 -- A Card ID is a unique integer that refers to an instance of a gard in
@@ -10,6 +10,10 @@ newtype CardID = CardID
   { cardID :: U8 
   }
   deriving (Eq, Ord, Show)
+
+-- We reserve CardID 0 for all the rules
+ruleCardID :: CardID
+ruleCardID = CardID . U8 $ 0
 
 -- Allows us to query a cards ability without needing to define an
 -- instance of Eq Ability

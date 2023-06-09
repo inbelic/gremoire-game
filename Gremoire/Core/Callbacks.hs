@@ -28,7 +28,7 @@ import qualified Data.Map as Map (Map, foldrWithKey, lookup, intersectionWith)
 
 displayState :: LoadInfo -> GameState -> B.ByteString
 displayState _ (GameState _ _ cardState abilityState)
-  = B.concat . replicate (numberPlayers + 1)
+  = B.cons 0 . B.concat . replicate numberPlayers
   . tagSize . Map.foldrWithKey displayCard B.empty
   . Map.intersectionWith (,) cardState
   $ abilityState

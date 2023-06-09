@@ -1,4 +1,4 @@
-module Internal.Game.Cut
+module Core.Cut
   ( Comp(..)
   , mkFilt
   , Contrastable(contrast)
@@ -10,7 +10,7 @@ module Internal.Game.Cut
   , Cuts
   , trim
   , cut
-  -- Internal testing exports
+  , refine
   , select
   , filtrate
   -- Internal Load export
@@ -57,6 +57,10 @@ select selection = Map.filter (select' selection)
 select' :: (Ord a, Ord k) => Selection k a -> Map.Map k a -> Bool
 select' (Selection selection) = (`anySatisfied` selection)
 
+-- An ergonomic wrapper around select
+refine :: (Ord a, Ord k) => k -> Comp -> a -> Map.Map v (Map.Map k a)
+                         -> Map.Map v (Map.Map k a)
+refine key cmp val = select (Selection [Constraint key cmp val])
 
 -- We begin by assuming all items will be included in the output mapping and the
 -- items that make all constraints evaluate to True are removed. Hence, we

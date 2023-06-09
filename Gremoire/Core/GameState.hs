@@ -10,7 +10,7 @@ import Core.Card (view)
 import Core.History
 
 import Internal.Game.Types
-import Core.Views (CompiledWindows)
+import Internal.Game.Views (CompiledWindows)
 
 peek :: Game -> CompiledWindows -> GameState
 peek (Game stck hist crds) = uncurry (GameState stck hist) . view crds

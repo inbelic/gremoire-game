@@ -13,7 +13,6 @@ import Control.Monad (when, zipWithM)
 import Control.Concurrent.Chan (Chan, newChan, readChan, writeChan)
 import qualified Data.ByteString as B
 import Internal.Bytes
-import Internal.Comms.Porter
 import Internal.Comms.Cmds
 import qualified Core.Callbacks as Callback
 import Internal.Game.Load (LoadInfo(..))
@@ -62,8 +61,10 @@ displayState loadInfo gameState conn () = do
       where
         emp = B.cons 0 . B.cons 0 . B.cons 0 $ B.empty
 
-requestOrder :: GameState -> Comm [Header]
-requestOrder gameState conn hdrs = do
+requestOrder :: LoadInfo -> GameState -> Comm [Header]
+requestOrder _ _ _ [] = return []
+requestOrder loadInfo gameState conn hdrs = do
+    displayState loadInfo gameState conn ()
     let groupedHdrs = map snd
                     . flip (foldr groupHeaders) hdrs
                     $ fillHeaders outputOrder
@@ -79,7 +80,7 @@ requestOrder gameState conn hdrs = do
                     $ zipWithM reorder groupedHdrs responses
     case orderedHdrs of
         Nothing ->
-            requestOrder gameState conn hdrs
+            requestOrder loadInfo gameState conn hdrs
         (Just hdrs) -> return hdrs
 
     where
@@ -96,6 +97,7 @@ requestOrder gameState conn hdrs = do
           f byte = (fromEnum byte :)
 
 requestTargets :: Comm Header
+requestTargets conn hdr@Unassigned{} = return hdr
 requestTargets conn hdr@(Assigned owner cID aID targets)
   = fmap (Targeted owner cID aID)
   . mapM (requestTarget conn hdr)
