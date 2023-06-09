@@ -4,7 +4,8 @@ module Core.Callbacks
   , orderPlayers
   ) where
 
-import Core.Fields -- (Owner)
+import Core.Fields
+import Core.CardState
 import Internal.Bytes
 import Internal.Misc
 import Internal.Game.Load (LoadInfo)

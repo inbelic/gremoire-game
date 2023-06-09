@@ -6,20 +6,22 @@ import qualified Data.Map as Map (Map, fromList, lookup, filter, keys)
 
 data Field
   -- Boolean flags
-  = Revealed
+  = Revealed | ActiveFlag | AttackFlag
   -- Enums
   | Zone | Phase
   -- U8s
-  | SetID | CardNum | Owner
+  | SetID | CardNum | Owner | Position
   deriving (Eq, Ord, Show, Enum, Bounded)
 
 type FieldMap = Map.Map Field U8
 
 -- Various Boolean flags for a card
 type Revealed = Bool
+type ActiveFlag = Bool
 
 -- Various Enum values for a card
-data Zone = Deck | Hand | Throne
+data Zone = Hand | TopDeck | MidDeck | BotDeck
+          | Stack | Throne | Barrack | Battlefield
   deriving (Eq, Ord, Enum, Show)
 
 data Phase = Morning | Seige | Retaliate | Nominate | Skirmish | Night
@@ -29,6 +31,7 @@ data Phase = Morning | Seige | Retaliate | Nominate | Skirmish | Night
 type SetID = U8
 type CardNum = U8
 type Owner = U8
+type Position = U8
 
 type NumEnums = Int
 data FieldType
@@ -42,13 +45,15 @@ data FieldType
 fieldTypeMap :: Map.Map Field FieldType
 fieldTypeMap = Map.fromList
   [ (Revealed, FlagType)  -- Boolean flags as either set (True) or not (False)
+  , (ActiveFlag, FlagType)
   ----------------------------------------
-  , (Zone, EnumType 2)    -- Enums in the range [0, NumEnums - 1]
+  , (Zone, EnumType 8)    -- Enums in the range [0, NumEnums - 1]
   , (Phase, EnumType 6)
   ----------------------------------------
   , (SetID, IntType)      -- Integers are in the set [0, 255]
   , (CardNum, IntType)
   , (Owner, IntType)
+  , (Position, IntType)
   ]
 
 fieldToType :: Field -> FieldType
