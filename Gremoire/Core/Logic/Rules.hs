@@ -1,7 +1,7 @@
 module Core.Logic.Rules where
 
 import Core.Card
-import Core.CardState (check, assertEq)
+import Core.CardState
 import Core.GameState
 import Core.Fields
 
@@ -30,7 +30,8 @@ ruleCard
   . foldr (discardAlteration . equip) create
   $ abltys
     where
-      abltys = [ nightPhase, unsetNominate players
+      abltys = [ nightPhase players
+               , unsetNominate players
                , setNominate players
                , setActive
                , morningPhase, incrementPhase]
@@ -81,6 +82,8 @@ setActive = Ability Nothing OnTrigger trg grd rslvs trgts
 -- When we enter the nominate phase we will set the ActiveFlag to true
 -- and the Nominated flag of both players to be False.
 -- To stop the phase increment until the active flag is unset in unsetNominate
+--
+-- Both heros are both automatically nominated into the skirmish
 setNominate :: [Owner] -> Ability
 setNominate owners = Ability Nothing OnTrigger trg grd rslvs trgts
   where
@@ -90,9 +93,13 @@ setNominate owners = Ability Nothing OnTrigger trg grd rslvs trgts
 
     trgts = targetRuleCard (TargetID 0)
           <> Targeting (\_ _ -> map ((TargetID 1, ) . Given . CardID) owners)
+          <> Targeting (\_ gs ->
+            let heros = map (`getHero` getCS gs) owners
+             in map ((TargetID 2, ) . Given) heros)
 
     rslvs = Map.fromList [ (TargetID 0, justChange setActiveFlag)
                          , (TargetID 1, justChange $ set Nominated (enumToU8 False))
+                         , (TargetID 2, justChange $ set Nominated (enumToU8 True))
                          ]
 
 -- We can end the nominate phase when both players have denoted they are done
@@ -109,20 +116,21 @@ unsetNominate owners = Ability Nothing OnTrigger trg grd rslvs trgts
     trgts = targetRuleCard (TargetID 0)
     rslvs = Map.fromList [(TargetID 0, justChange unsetActiveFlag)]
 
-nightPhase :: Ability
-nightPhase = Ability Nothing OnTrigger trg grd rslvs trgts
+-- In the night phase we move back all the units from the battlefield
+-- to their barracks and then record the new attacker
+nightPhase :: [Owner] -> Ability
+nightPhase owners = Ability Nothing OnTrigger trg grd rslvs trgts
   where
     trg = enteredPhase Night
 
     grd = alwaysOk
 
     trgts = allZone (TargetID 0) Battlefield
-    rslvs = Map.fromList [(TargetID 0, moveZone Barrack)]
+    rslvs = Map.fromList [ (TargetID 0, moveZone Barrack) ]
 
 -------------------------------------------------
   -- PLAYER CARD Rules
 -------------------------------------------------
-
 players :: [Owner]
 players = [U8 1, U8 2]
 
@@ -172,6 +180,41 @@ nominatePhase owner = Ability Nothing OnResolve trg grd rslvs trgts
     trgts = validNomins (TargetID 0) owner
     rslvs = Map.fromList [(TargetID 0, justChange . set Nominated $ enumToU8 True)]
 
+-------------------------------------------------
+  -- HERO CARD Rules
+-------------------------------------------------
+-- All heros are nominated during
+conscriptHero :: Ability
+conscriptHero = Ability Nothing OnTrigger trg grd rslvs trgts
+  where
+    trg = both (enteredPhase Formation)
+        . both (Trigger nominated)
+        $ Trigger (\cID -> assertEq cID Zone (enumToU8 Throne) . getCS)
+
+    grd = both (inZone Throne) $ Guard (const nominated)
+
+    nominated :: CardID -> GameState -> Bool
+    nominated cID = assertEq cID Nominated (enumToU8 True) . getCS
+
+    rslvs = Map.fromList [(TargetID 0, justChange unsetNominated
+                                        <> moveZone Battlefield)]
+
+    unsetNominated :: Change
+    unsetNominated = set Nominated (enumToU8 False)
+
+    trgts = targetSelf (TargetID 0)
+
+-- After a skirmish the hero is returned to the barraks where they are then
+-- retreated to the throne
+retreatHero :: Ability
+retreatHero = Ability Nothing OnTrigger trg grd rslvs trgts
+  where
+    trg = selfEntered Barrack
+    grd = inZone Barrack
+
+    rslvs = Map.fromList [(TargetID 0, moveZone Throne)]
+    trgts = targetSelf (TargetID 0)
+
 
 -------------------------------------------------
   -- UNIT CARD Rules
@@ -185,6 +228,9 @@ resolveUnit = Ability Nothing OnTrigger trg grd rslvs trgts
     rslvs = Map.fromList [(TargetID 0, moveZone Barrack)]
     trgts = targetSelf (TargetID 0)
 
+-- All units that have been nominated will have this trigger at the same time
+-- so then the order of the triggers will determine which unit is in which
+-- position
 conscriptUnit :: Ability
 conscriptUnit = Ability Nothing OnTrigger trg grd rslvs trgts
   where
@@ -205,3 +251,28 @@ conscriptUnit = Ability Nothing OnTrigger trg grd rslvs trgts
     unsetNominated = set Nominated (enumToU8 False)
 
     trgts = targetSelf (TargetID 0)
+
+-- In the skirmish phase, each unit will compute which opponent they need to
+-- strike (TODO: currently unoptimized such that the same thing is computed many
+-- times)
+skirmishUnit :: Ability
+skirmishUnit = Ability Nothing OnTrigger trg grd rslvs trgts
+  where
+    trg = both (enteredPhase Skirmish)
+        $ Trigger (\cID -> assertEq cID Zone (enumToU8 Battlefield) . getCS)
+
+    grd = alwaysOk
+
+    trgts = detStrikeTarget $ TargetID 0
+    rslvs = Map.fromList [(TargetID 0, doStrike)]
+
+assertAlive :: Ability
+assertAlive = Ability Nothing OnTrigger trg grd rslvs trgts
+  where
+    trg = both (changedField Toughness)
+        $ Trigger (\cID -> assertEq cID Toughness (U8 0) . getCS)
+
+    grd = Guard (\_ tcID -> assertEq tcID Toughness (U8 0) . getCS)
+
+    rslvs = Map.fromList [(TargetID 0, moveZone Cemetery)]
+    trgts = targetSelf $ TargetID 0

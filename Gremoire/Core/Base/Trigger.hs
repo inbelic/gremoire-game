@@ -43,3 +43,17 @@ playersDoneNoms :: [Owner] -> Trigger
 playersDoneNoms owners = Trigger $
   \_ gs -> null . refine Nominated Eq (enumToU8 False)
             . subset (map CardID owners) $ getCS gs
+
+changedField :: Field -> Trigger
+changedField fld = Trigger $ \cID -> any (f cID) . current . getHistory
+  where
+    f cID (Event _ tcID (Set setFld _))
+      | tcID == cID && fld == setFld = True
+      | otherwise                    = False
+    f cID (Event _ tcID (Shift shiftedFld _ _))
+      | tcID == cID && fld == shiftedFld = True
+      | otherwise                        = False
+    f cID (Event _ tcID (Alter alteredField))
+      | tcID == cID && fld == alteredField = True
+      | otherwise                          = False
+    f _ _ = False

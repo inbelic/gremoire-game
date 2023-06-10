@@ -73,7 +73,7 @@ data GameState = GameState
 -- to be able to enumerate over them to the best of our ability. Hence, we
 -- have the possible alterations of a card listed:
 data Alteration
-  = Shift Field U8      -- We shifted the Field value by Int
+  = Shift Field Bool U8 -- We shifted the Field value by Int
   | Set Field U8        -- We set an Attr to a value Int
   | Alter Field         -- We either modified or replaced how to eval the Field
   | Equip               -- We gave the card an ability

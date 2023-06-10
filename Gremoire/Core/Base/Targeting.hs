@@ -5,6 +5,8 @@ import Core.GameState
 import Core.Fields
 import Core.Cut
 
+import Core.Logic.Battle
+
 import Internal.Bytes
 import Internal.Game.Types
 
@@ -70,6 +72,12 @@ validNomins tID owner = Targeting $
 
 allZone :: TargetID -> Zone -> Targeting
 allZone tID zn = Targeting $
-  \_ gs -> case within . refine Zone Eq (enumToU8 zn) $ getCS gs of
-          [] -> undefined
-          tcIDs -> map ((tID, ) . Given) tcIDs
+  \_ gs -> map ((tID, ) . Given)
+         . within . refine Zone Eq (enumToU8 zn)
+         $ getCS gs
+
+detStrikeTarget :: TargetID -> Targeting
+detStrikeTarget tID = Targeting $
+  \cID gs -> case computeStrike cID $ getCS gs of
+               Nothing -> []
+               (Just tcID) -> [(tID, Given tcID)]

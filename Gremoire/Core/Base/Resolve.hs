@@ -60,3 +60,7 @@ setActiveFlag = set ActiveFlag (enumToU8 True)
 
 unsetActiveFlag :: Change
 unsetActiveFlag = set ActiveFlag (enumToU8 False)
+
+doStrike :: Resolve
+doStrike = Resolve $
+  \cID tcID gs -> shift Toughness True . check cID Power (U8 0) $ getCS gs

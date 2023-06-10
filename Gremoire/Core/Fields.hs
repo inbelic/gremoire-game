@@ -10,7 +10,7 @@ data Field
   -- Enums
   | Zone | Phase
   -- U8s
-  | SetID | CardNum | Owner | Position
+  | SetID | CardNum | Owner | Position | Power | Toughness
   deriving (Eq, Ord, Show, Enum, Bounded)
 
 type FieldMap = Map.Map Field U8
@@ -23,6 +23,7 @@ type Nominated = Bool
 -- Various Enum values for a card
 data Zone = Hand | TopDeck | MidDeck | BotDeck
           | Stack | Throne | Barrack | Battlefield
+          | Cemetery
   deriving (Eq, Ord, Enum, Show)
 
 data Phase = Morning | Seige | Retaliate | Nominate
@@ -34,6 +35,8 @@ type SetID = U8
 type CardNum = U8
 type Owner = U8
 type Position = U8
+type Power = U8
+type Toughness = U8
 
 type NumEnums = Int
 data FieldType
@@ -51,13 +54,15 @@ fieldTypeMap = Map.fromList
   , (AttackFlag, FlagType)
   , (Nominated, FlagType)
   ----------------------------------------
-  , (Zone, EnumType 8)    -- Enums in the range [0, NumEnums - 1]
+  , (Zone, EnumType 9)    -- Enums in the range [0, NumEnums - 1]
   , (Phase, EnumType 7)
   ----------------------------------------
   , (SetID, IntType)      -- Integers are in the set [0, 255]
   , (CardNum, IntType)
   , (Owner, IntType)
   , (Position, IntType)
+  , (Power, IntType)
+  , (Toughness, IntType)
   ]
 
 fieldToType :: Field -> FieldType

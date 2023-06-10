@@ -50,7 +50,7 @@ reload = Change $ \crd ->
 
 -- Shift the value of the Field by x
 shift :: Field -> Bool -> U8 -> Change
-shift fld minus x = Change $ \crd -> ([Shift fld x], shift' fld x crd)
+shift fld minus x = Change $ \crd -> ([Shift fld minus x], shift' fld x crd)
   where
     shift' :: Field -> U8 -> Card -> Card
     shift' fld x crd

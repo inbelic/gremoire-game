@@ -1,9 +1,11 @@
 module Core.CardState
   ( check
+  , check'
   , assertEq
   , subset
   , within
   , extract
+  , orderBy
   , getZone
   , getHero
   ) where
@@ -17,13 +19,20 @@ import Core.Cut
 import Internal.Bytes
 import Internal.Game.Types (CardID, CardState)
 import qualified Data.Map as Map (Map, lookup, keys, foldrWithKey, filterWithKey)
+import Data.List (insertBy)
 
 -- Checks the integer value stored in the cards field
 -- will return the provided default in that the card or field
 -- value is not given
 check :: CardID -> Field -> U8 -> CardState -> U8
 check cID fld def cs
-  = case (=<<) (Map.lookup fld) $ Map.lookup cID cs of
+  = case check' fld def <$> Map.lookup cID cs of
+      Nothing -> def
+      (Just x) -> x
+
+check' :: Field -> U8 -> FieldMap -> U8
+check' fld def fm
+  = case Map.lookup fld fm of
       Nothing -> def
       (Just x) -> x
 
@@ -42,6 +51,7 @@ subset cIDs = Map.filterWithKey (\cID _ -> cID `elem` cIDs)
 within :: CardState -> [CardID]
 within = Map.keys
 
+-- Get all the field values of the cardstate and their associated id
 extract :: Field -> CardState -> [(CardID, U8)]
 extract fld = Map.foldrWithKey f []
   where
@@ -49,12 +59,27 @@ extract fld = Map.foldrWithKey f []
                  Nothing -> id
                  (Just x) -> ((cID, x) :)
 
+-- We will output the list version of the cardstate that is ordered by the
+-- given field and filters out all cards that do not have the given field
+orderBy :: Field -> CardState -> [(CardID, FieldMap)]
+orderBy fld = map snd . Map.foldrWithKey (orderedInsert fld) []
+  where
+    orderedInsert :: Field -> CardID -> FieldMap -> [(U8, (CardID, FieldMap))]
+                  -> [(U8, (CardID, FieldMap))]
+    orderedInsert fld cID fm
+      = case Map.lookup fld fm of
+          Nothing -> id
+          (Just val) -> insertBy byField (val, (cID, fm))
+
+    byField :: (U8, (CardID, FieldMap)) -> (U8, (CardID, FieldMap)) -> Ordering
+    byField x y = compare (fst x) (fst y)
+
 -- Return all the cards that are in the zone
 getZone :: Zone -> CardState -> [CardID]
 getZone zone = within . refine Zone Eq (enumToU8 zone)
 
 -- Return the hero card of the respective hero (error on 0)
 getHero :: Owner -> CardState -> CardID
-getHero o
-  | u8 o == 0 = undefined
-  | otherwise = head . getZone Throne
+getHero owner
+  | u8 owner == 0 = undefined
+  | otherwise = head . getZone Throne . refine Owner Eq owner
