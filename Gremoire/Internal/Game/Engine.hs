@@ -13,6 +13,8 @@ import Internal.Comms.Comms (Comm, displayState, requestOrder, requestTargets)
 import Control.Monad ((<=<))
 import qualified Data.Map as Map (Map, lookup, insert)
 
+import Internal.Comms.Porter
+
 -- The Grand Engine:
 --
 -- As enjoyable as it would be to just leave this hunk of compact,
@@ -54,6 +56,8 @@ resolveStack loadInfo conn game@(Game stck hist crds) = do
   -- Evaluate our GameState and collect the trigger headers
   let gameState = peek game . compiledWindows $ loadInfo
       hdrs = collectHeaders gameState crds
+  -- Log the events on the stack that were being considered
+  portLogStr . show . current . getHistory $ gameState
   -- Then request the order and targets of applicable headers
   hdrs' <- mapM (requestTargets conn)
         <=< requestOrder loadInfo gameState conn $ hdrs

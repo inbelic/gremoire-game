@@ -13,7 +13,7 @@ import Internal.Game.Types
 import Internal.Game.Views
 
 import qualified Data.ByteString as B (ByteString)
-import qualified Data.Map as Map (fromList)
+import qualified Data.Map as Map (fromList, keys)
 
 data LoadInfo = LoadInfo
   { compiledWindows   :: CompiledWindows
@@ -40,15 +40,11 @@ basicLoadInfo :: LoadInfo
 basicLoadInfo = LoadInfo basicFilterSet basicMaskSet
 
 -- An empty filter set means we will take all cards
+-- So the basic filter set will assume there are no dependencies and compute
+-- everything
 basicFilterSet :: CompiledWindows
-basicFilterSet = CWindows [ Window Revealed $ Filtration []
-                          , Window ActiveFlag $ Filtration []
-                          , Window AttackFlag $ Filtration []
-                          , Window Zone $ Filtration []
-                          , Window Phase $ Filtration []
-                          , Window Owner $ Filtration []
-                          , Window Position $ Filtration []
-                          ]
+basicFilterSet = CWindows . map (\fld -> Window fld $ Filtration [])
+                          . Map.keys $ fieldTypeMap
 
 basicMaskSet :: CompiledMasks
 basicMaskSet = CMasks
@@ -70,8 +66,9 @@ dummyUnit :: Owner -> Card
 dummyUnit owner
   = mint
   . discardAlteration (set Owner owner)
+  . discardAlteration (set Nominated (U8 0))
   . discardAlteration (set Zone (enumToU8 TopDeck)) -- Should be middeck but is topdeck for testing purposes
   . foldr (discardAlteration . equip) create
   $ abltys
     where
-      abltys = [resolveUnit]
+      abltys = [conscriptUnit, resolveUnit]

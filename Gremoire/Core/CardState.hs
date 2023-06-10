@@ -1,6 +1,7 @@
 module Core.CardState
   ( check
   , assertEq
+  , subset
   , within
   , extract
   , getZone
@@ -15,7 +16,7 @@ import Core.Cut
 
 import Internal.Bytes
 import Internal.Game.Types (CardID, CardState)
-import qualified Data.Map as Map (Map, lookup, keys, foldrWithKey)
+import qualified Data.Map as Map (Map, lookup, keys, foldrWithKey, filterWithKey)
 
 -- Checks the integer value stored in the cards field
 -- will return the provided default in that the card or field
@@ -32,6 +33,9 @@ assertEq cID fld val cs
   = case (=<<) (Map.lookup fld) $ Map.lookup cID cs of
       Nothing -> False
       (Just x) -> x == val
+
+subset :: [CardID] -> CardState -> CardState
+subset cIDs = Map.filterWithKey (\cID _ -> cID `elem` cIDs)
 
 -- Returns which cards are still in the cardstate. Used after some sort of
 -- selection or filtration

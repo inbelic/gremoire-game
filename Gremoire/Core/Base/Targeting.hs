@@ -8,11 +8,20 @@ import Core.Cut
 import Internal.Bytes
 import Internal.Game.Types
 
+-- Module to define various common helpers for targeting
+
 instance Semigroup Targeting where
   (<>) (Targeting t1) (Targeting t2)
     = Targeting $ \cID gs -> t1 cID gs ++ t2 cID gs
 
--- Module to define various common helpers for targeting
+
+targetSelf :: TargetID -> Targeting
+targetSelf tID = Targeting $ \cID _ -> [(tID, Given cID)]
+
+targetRuleCard :: TargetID -> Targeting
+targetRuleCard tID = Targeting $ \_ _ -> [(tID, Given ruleCardID)]
+
+
 toDraw :: TargetID -> Owner -> Targeting
 toDraw tID owner = Targeting $
   \cID gs -> let cs = getCS gs
@@ -41,11 +50,26 @@ validPlays tID owner = Targeting $
              . refine Zone Eq (enumToU8 Hand)
              . getCS $ gs
      in case hand of
-          [] -> [(tID, Given . CardID $ 0)]
-          xs -> [(tID, ) . Inquire . (:) (CardID 0) $ xs]
+          [] -> [(tID, Given ruleCardID)]
+          xs -> [(tID, ) . Inquire . (:) ruleCardID $ xs]
 
-targetSelf :: TargetID -> Targeting
-targetSelf tID = Targeting $ \cID _ -> [(tID, Given cID)]
+-- A valid nomination is a card that is in the Owners Barrack zone and is not
+-- already nominate. We use a bit of a hack here to target the owner if
+-- they are done nominating
+validNomins :: TargetID -> Owner -> Targeting
+validNomins tID owner = Targeting $
+  \_ gs ->
+    let nomins = within
+               . refine Nominated Eq (enumToU8 False)
+               . refine Owner Eq owner
+               . refine Zone Eq (enumToU8 Barrack)
+               . getCS $ gs
+     in case nomins of
+          [] -> [(tID, Given (CardID owner))]
+          xs -> [(tID, ) . Inquire . (:) (CardID owner) $ xs]
 
-targetRuleCard :: TargetID -> Targeting
-targetRuleCard tID = Targeting $ \_ _ -> [(tID, Given ruleCardID)]
+allZone :: TargetID -> Zone -> Targeting
+allZone tID zn = Targeting $
+  \_ gs -> case within . refine Zone Eq (enumToU8 zn) $ getCS gs of
+          [] -> undefined
+          tcIDs -> map ((tID, ) . Given) tcIDs

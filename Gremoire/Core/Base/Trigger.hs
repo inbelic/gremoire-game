@@ -1,6 +1,7 @@
 module Core.Base.Trigger where
 
 import Core.CardState
+import Core.Cut
 import Core.GameState
 import Core.Fields
 import Core.History
@@ -36,3 +37,9 @@ selfEntered zn = Trigger $ \cID -> any (f cID) . current . getHistory
       | tcID == cID && enumToU8 zn == czn = True
       | otherwise = False
     f _ _ = False
+
+-- Here we check that all players are done nominating
+playersDoneNoms :: [Owner] -> Trigger
+playersDoneNoms owners = Trigger $
+  \_ gs -> null . refine Nominated Eq (enumToU8 False)
+            . subset (map CardID owners) $ getCS gs

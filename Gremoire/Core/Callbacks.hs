@@ -91,4 +91,4 @@ gremoireNumberPlayers :: Int
 gremoireNumberPlayers = 2
 
 gremoireOrderPlayers :: GameState -> [Owner]
-gremoireOrderPlayers _ = [0, 1, 2]
+gremoireOrderPlayers _ = [2, 1, 0]

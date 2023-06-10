@@ -92,7 +92,7 @@ instance Semigroup Change where
   (<>) (Change c1) (Change c2)
     = Change $ \crd ->
       let (alts1, crd') = c2 crd
-          (alts2, crd'') = c1 crd
+          (alts2, crd'') = c1 crd'
        in (alts2 ++ alts1, crd'')
 
 instance Monoid Change where
