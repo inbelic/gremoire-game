@@ -12,7 +12,6 @@ import Internal.Comms.Comms (newConn, harnessWrite, harnessRead)
 import Internal.Comms.Porter (portLogStr, portLog)
 import qualified Internal.Comms.Manager as M
 import Internal.Game.Start (invokeGame)
-import Internal.Misc (tagSize)
 
 import qualified Data.ByteString as B (ByteString, uncons)
 import Network.Socket
@@ -50,7 +49,7 @@ handleRequest gameTree sock gID response
       (Just conn) -> do
         harnessWrite conn response
         nxtGameRequest <- M.dress gID <$> harnessRead conn
-        sendAll sock . tagSize $ nxtGameRequest
+        sendAll sock nxtGameRequest
         harnessLoop gameTree sock
 
 -- following from Network.Socket example

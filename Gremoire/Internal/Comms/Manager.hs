@@ -13,7 +13,7 @@ import Prelude hiding (lookup)
 
 import Internal.Comms.Comms (Conn, newConn)
 import Data.Binary (encode, decode)
-import Data.Word (Word32)
+import Data.Word (Word16(..), Word32)
 import qualified Data.ByteString as B
   ( ByteString, append
   , length, splitAt
@@ -53,13 +53,17 @@ newtype GameID = GameID
 
 strip :: B.ByteString -> Maybe (GameID, B.ByteString)
 strip bytes
-  | len < 4 = Nothing
+  | len < 6 = Nothing
   | otherwise = Just (GameID . decode . B.fromStrict $ gIDBytes, otherBytes)
   where
     len = B.length bytes
-    (gIDBytes, otherBytes) = B.splitAt 4 bytes
+    (_size, bytes') = B.splitAt 1 bytes
+    (gIDBytes, otherBytes) = B.splitAt 4 bytes'
 
 dress :: GameID -> B.ByteString -> B.ByteString
-dress (GameID gID) = B.append gIDBytes
+dress (GameID gID) bytes = B.append sizeBytes bytes'
   where
+    bytes' = B.append gIDBytes bytes
     gIDBytes = B.toStrict $ encode gID
+    size = toEnum $ B.length bytes' :: Word16
+    sizeBytes = B.toStrict . encode $ size

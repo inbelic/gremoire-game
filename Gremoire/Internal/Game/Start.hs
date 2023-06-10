@@ -9,7 +9,6 @@ import Internal.Game.Load (LoadInfo, loadGame)
 import Internal.Comms.Comms (Conn, gameWrite, gameRead)
 import Internal.Game.Engine (resolveStack)
 import Internal.Game.Types (Game)
-import Internal.Misc (tagSize)
 
 import Control.Monad (void)
 
