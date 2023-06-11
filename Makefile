@@ -11,9 +11,8 @@ build:
 	$(GHC) --make -o $(ODIR)/gremoire Main -odir $(ODIR) \
 	-hidir $(ODIR) $(PACKAGES)
 
-run: build
-	cd build; \
-	./gremoire
+debug: build
+debug-run: build
 
 clean:
 	rm -rf build/*

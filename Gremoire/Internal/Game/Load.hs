@@ -74,7 +74,7 @@ dummyUnit owner
   . discardAlteration (set Toughness (U8 2))
   . discardAlteration (set Owner owner)
   . discardAlteration (set Nominated (U8 0))
-  . discardAlteration (set Zone (enumToU8 TopDeck)) -- Should be middeck but is topdeck for testing purposes
+  . discardAlteration (set Zone (enumToU8 MidDeck))
   . foldr (discardAlteration . equip) create
   $ abltys
     where

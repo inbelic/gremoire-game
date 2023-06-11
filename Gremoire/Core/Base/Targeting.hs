@@ -33,9 +33,9 @@ toDraw tID owner = Targeting $
                  botDeck = within $ refine Zone Eq (enumToU8 BotDeck) owned
               in case (topDeck, midDeck, botDeck) of
                    ([], [], []) -> [] -- No card to draw
-                   ([], [], xs) -> [(tID, Given $ head xs)]
+                   ([], [], x:xs) -> [(tID, Given x)]
                    ([], xs, _) -> [(tID, Random xs)]
-                   (xs, _, _) -> [(tID, Given $ head xs)]
+                   (x:xs, _, _) -> [(tID, Given x)]
 
 bothDraw :: TargetID -> Targeting
 bothDraw tID = toDraw tID (U8 1) <> toDraw tID (U8 2)
