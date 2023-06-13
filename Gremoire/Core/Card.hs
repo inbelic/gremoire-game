@@ -1,9 +1,8 @@
 module Core.Card
   ( Card(..)
-  -- Internal Card Interface
+  -- External Card Interface
   , create
   , mint
-  -- External Card Interface
   , reload
   , shift
   , set

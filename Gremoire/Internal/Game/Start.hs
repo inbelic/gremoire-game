@@ -1,5 +1,5 @@
 module Internal.Game.Start
-  ( invokeGame 
+  ( invokeGame
   ) where
 
 -- This module encapsulates all things required to start up a new

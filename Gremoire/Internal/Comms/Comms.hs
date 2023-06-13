@@ -149,7 +149,7 @@ requestTargets conn hdr@(Assigned owner cID aID targets)
             = B.cons (u8ToEnum x) . B.cons (u8ToEnum y)
             . foldr (B.cons . u8ToEnum . cardID) B.empty $ bytes
 
--- The output will expect some sort of output for every user with the 
+-- The output will expect some sort of output for every user with the
 -- given format. Hence, we fill the owners that don't require any input
 -- with empty lists.
 fillHeaders :: [Int] -> [(Owner, [Header])]
@@ -165,7 +165,7 @@ ownerMap :: Owner -> Header -> (Owner, [Header]) -> (Owner, [Header])
 ownerMap owner hdr (otherOwner, hdrs)
   | owner == otherOwner = (owner, hdr : hdrs)
   | otherwise = (otherOwner, hdrs)
-      
+
 -- We will got through our bytestring and split the requests into their
 -- appropriate users
 groupResponses :: B.ByteString -> [B.ByteString] -> [B.ByteString]

@@ -20,7 +20,7 @@ newtype Cmd = Cmd
   { getCmd :: Word8
   }
 
-ok :: Cmd 
+ok :: Cmd
 ok = mkCmd 0
 
 invalid :: Cmd

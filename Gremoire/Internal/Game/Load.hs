@@ -4,10 +4,11 @@ module Internal.Game.Load
   , loadGame
   ) where
 
+import Base.Set
+
 import Core.Card
 import Core.Fields
 import Core.History (begin)
-import Core.Logic.Rules
 import Internal.Bytes
 import Internal.Game.Types
 import Internal.Game.Views
@@ -52,30 +53,3 @@ basicMaskSet = CMasks
   , []
   , []
   )
-
-
--- Temporary dummy cards for testing purposes
-dummyHero :: Owner -> Card
-dummyHero owner
-  = mint
-  . discardAlteration (set Power (U8 0))
-  . discardAlteration (set Toughness (U8 5))
-  . discardAlteration (set Owner owner)
-  . discardAlteration (set Zone (enumToU8 Throne))
-  . foldr (discardAlteration . equip) create
-  $ abltys
-    where
-      abltys = [retreatHero, conscriptHero]
-
-dummyUnit :: Owner -> Card
-dummyUnit owner
-  = mint
-  . discardAlteration (set Power (U8 1))
-  . discardAlteration (set Toughness (U8 2))
-  . discardAlteration (set Owner owner)
-  . discardAlteration (set Nominated (U8 0))
-  . discardAlteration (set Zone (enumToU8 MidDeck))
-  . foldr (discardAlteration . equip) create
-  $ abltys
-    where
-      abltys = [assertAlive, skirmishUnit, conscriptUnit, resolveUnit]

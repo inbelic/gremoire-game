@@ -156,7 +156,7 @@ resolveUnassigned loadInfo gameState cID aID conn (Game stck hist crds)
       (Just ablty) -> do
         let owner = check cID Owner (U8 0)
                   . getCS $ gameState
-        hdr <- requestTargets conn 
+        hdr <- requestTargets conn
              . Assigned owner cID aID
              $ getTargets (getTargeting ablty) cID gameState
         let game' = Game (hdr : stck) hist crds

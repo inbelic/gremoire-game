@@ -1,4 +1,11 @@
-module Core.Base.Resolve where
+module Core.Resolve
+  ( Resolve(..)
+  , Change(..)
+  , moveZone
+  , justChange
+  , orChangeRuleCard
+  , orResolveRuleCard
+  ) where
 
 import Core.Card
 import Core.CardState
@@ -53,14 +60,3 @@ orResolveRuleCard (Resolve r1) (Resolve r2) = Resolve rslv
     rslv cID tcID gs
       | tcID == ruleCardID = r1 cID tcID gs
       | otherwise          = r2 cID tcID gs
-
-
-setActiveFlag :: Change
-setActiveFlag = set ActiveFlag (enumToU8 True)
-
-unsetActiveFlag :: Change
-unsetActiveFlag = set ActiveFlag (enumToU8 False)
-
-doStrike :: Resolve
-doStrike = Resolve $
-  \cID tcID gs -> shift Toughness True . check cID Power (U8 0) $ getCS gs

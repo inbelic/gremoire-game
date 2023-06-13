@@ -1,13 +1,12 @@
 module Core.CardState
-  ( check
+  ( CardState(..)
+  , check
   , check'
   , assertEq
   , subset
   , within
   , extract
   , orderBy
-  , getZone
-  , getHero
   ) where
 
 -- This module provides a helpful public 'library' of tool functions to insepct
@@ -73,13 +72,3 @@ orderBy fld = map snd . Map.foldrWithKey (orderedInsert fld) []
 
     byField :: (U8, (CardID, FieldMap)) -> (U8, (CardID, FieldMap)) -> Ordering
     byField x y = compare (fst x) (fst y)
-
--- Return all the cards that are in the zone
-getZone :: Zone -> CardState -> [CardID]
-getZone zone = within . refine Zone Eq (enumToU8 zone)
-
--- Return the hero card of the respective hero (error on 0)
-getHero :: Owner -> CardState -> CardID
-getHero owner
-  | u8 owner == 0 = undefined
-  | otherwise = head . getZone Throne . refine Owner Eq owner

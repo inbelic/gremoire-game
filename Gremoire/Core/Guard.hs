@@ -1,4 +1,10 @@
-module Core.Base.Guard where
+module Core.Guard
+  ( Guard(..)
+  , alwaysOk
+  , inZone
+  , checkGrd
+  , isRulesCard
+  ) where
 
 import Core.CardState
 import Core.GameState
@@ -21,6 +27,3 @@ checkGrd f = Guard $ \_ _ -> f
 
 isRulesCard :: Guard
 isRulesCard = Guard $ \_ tcID _ -> tcID == ruleCardID
-
-isPlayerCard :: Owner -> Guard
-isPlayerCard owner = Guard $ \_ tcID _ -> cardID tcID == owner

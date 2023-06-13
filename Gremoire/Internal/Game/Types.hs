@@ -7,7 +7,7 @@ import qualified Data.Map as Map (Map)
 -- A Card ID is a unique integer that refers to an instance of a gard in
 -- a game
 newtype CardID = CardID
-  { cardID :: U8 
+  { cardID :: U8
   }
   deriving (Eq, Ord, Show)
 
