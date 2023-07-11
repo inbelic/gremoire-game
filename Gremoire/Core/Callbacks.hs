@@ -29,8 +29,9 @@ import qualified Data.Map as Map (Map, foldrWithKey, lookup, intersectionWith)
 
 displayState :: LoadInfo -> GameState -> B.ByteString
 displayState _ (GameState _ _ cardState abilityState)
-  = B.cons 0 . B.concat . replicate numberPlayers
-  . tagSize . Map.foldrWithKey displayCard B.empty
+  = B.cons 0 -- Extra zero to provide to the game_system
+  . B.concat . map tagSize . zipWith tagPlayerID [1..numberPlayers]
+  . repeat . Map.foldrWithKey displayCard B.empty
   . Map.intersectionWith (,) cardState
   $ abilityState
   where
@@ -58,6 +59,8 @@ displayState _ (GameState _ _ cardState abilityState)
       = B.cons (toEnum . fromEnum $ field)
       . B.cons (u8ToEnum val)
 
+    tagPlayerID :: Int -> B.ByteString -> B.ByteString
+    tagPlayerID = B.cons . toEnum
 
 
 -- We also provide a callback to determine which players triggers should be
