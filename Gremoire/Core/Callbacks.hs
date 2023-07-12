@@ -8,8 +8,9 @@ import Core.Fields
 import Core.CardState
 import Internal.Bytes
 import Internal.Misc
-import Internal.Game.Load (LoadInfo)
+import Internal.Game.Load (LoadInfo, compiledMasks)
 import Internal.Game.Types
+import Internal.Game.Views
 import qualified Data.ByteString as B -- (ByteString)
 import qualified Data.Map as Map (Map, foldrWithKey, lookup, intersectionWith)
 
@@ -28,17 +29,36 @@ import qualified Data.Map as Map (Map, foldrWithKey, lookup, intersectionWith)
 -- N_i < 255.
 
 displayState :: LoadInfo -> GameState -> B.ByteString
-displayState _ (GameState _ _ cardState abilityState)
+displayState loadInfo (GameState _ _ cardState abilityState)
   = B.cons 0 -- Extra zero to provide to the game_system
-  . B.concat . map tagSize . zipWith tagPlayerID [1..numberPlayers]
-  . repeat . Map.foldrWithKey displayCard B.empty
-  . Map.intersectionWith (,) cardState
+  . B.concat . map tagSize . zipWith (displayCards masks) [1..numberPlayers]
+  . repeat . Map.intersectionWith (,) cardState
   $ abilityState
   where
-    displayCard :: CardID -> (FieldMap, StmtMap) -> B.ByteString
-                -> B.ByteString
-    displayCard (CardID cID) (fm, stmtIDs) = B.append cardBytes
+    masks = getMasks . compiledMasks $ loadInfo
+
+    displayCards :: (Masks, Masks, Masks) -> Int
+                    -> Map.Map CardID (FieldMap, StmtMap) -> B.ByteString
+    displayCards masks ownerInt
+      = tagPlayerID ownerInt . Map.foldrWithKey (displayCard masks owner) B.empty
+      where
+        owner = enumToU8 ownerInt
+
+    displayCard :: (Masks, Masks, Masks) -> Owner ->
+                   CardID -> (FieldMap, StmtMap) -> B.ByteString -> B.ByteString
+    displayCard (sysMask, allyMask, opMask) owner (CardID cID) (fm, stmtIDs)
+      | showCID = B.cons (u8ToEnum cID) . B.append fmBytes . B.append stmtBytes
+      | otherwise = B.cons 0 . B.append fmBytes . B.cons 0
         where
+          mask = case check' Owner (U8 0) fm of
+                   (U8 0) -> sysMask
+                   x -> if owner == x
+                           then allyMask
+                           else opMask
+          fm' = filterMasks mask fm
+          fmBytes = displayFieldMap fm'
+          stmtBytes = displayStmtMap stmtIDs
+          showCID = check' CardNum (U8 0) fm' /= U8 0
           cardBytes
             = B.cons (u8ToEnum cID)
             $ B.append (displayFieldMap fm) (displayStmtMap stmtIDs)
@@ -61,7 +81,6 @@ displayState _ (GameState _ _ cardState abilityState)
 
     tagPlayerID :: Int -> B.ByteString -> B.ByteString
     tagPlayerID = B.cons . toEnum
-
 
 -- We also provide a callback to determine which players triggers should be
 -- place on the stack first based on the current game state. If we have
@@ -93,5 +112,6 @@ orderPlayers = gremoireOrderPlayers
 gremoireNumberPlayers :: Int
 gremoireNumberPlayers = 2
 
+-- TODO:
 gremoireOrderPlayers :: GameState -> [Owner]
 gremoireOrderPlayers _ = [2, 1, 0]

@@ -90,6 +90,7 @@ newtype CompiledMasks = CMasks
 -- Apply the masks over the given FieldMap and return the resulting FieldMap
 -- with the Fields that satisfy their respective filters
 filterMasks :: Masks -> FieldMap -> FieldMap
+filterMasks [] fm = fm
 filterMasks masks fm = Map.filterWithKey (filterMasks' masks fm) fm
   where
     filterMasks' :: Masks -> FieldMap -> Field -> U8 -> Bool
@@ -98,4 +99,5 @@ filterMasks masks fm = Map.filterWithKey (filterMasks' masks fm) fm
     checkMask :: FieldMap -> Field -> Mask -> Bool
     checkMask fm fld (Mask curFld selection)
       | fld /= curFld = False
+      | null . getSelection $ selection = True
       | otherwise = select' selection fm

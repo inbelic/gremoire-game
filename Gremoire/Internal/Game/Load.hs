@@ -45,7 +45,22 @@ basicFilterSet = CWindows . map (\fld -> Window fld $ Filtration [])
 
 basicMaskSet :: CompiledMasks
 basicMaskSet = CMasks
-  ( [Mask Owner $ Selection [Constraint Owner Tr (U8 0)]]
-  , []
-  , []
+  ( [always Owner, always CardNum, always SetID, always Phase]
+  , [always Owner, always Zone, always CardNum, always SetID, always Position,
+    always Power, always Toughness]
+  , [always Owner, always Zone] ++ whenVisible CardNum ++ whenVisible SetID
+  ++ whenVisible Position ++ whenVisible Power ++ whenVisible Toughness
   )
+
+always :: Field -> Mask
+always fld = Mask fld $ Selection []
+
+-- Visible is equivalent to being in any of the following zones:
+-- Throne, Stack, Barrack, Battlefield, Cemetery or Revealed
+whenVisible :: Field -> [Mask]
+whenVisible fld
+  = (:) (Mask fld $ Selection [Constraint Revealed Eq 1])
+  $ map (whenInZone fld) [Stack, Throne, Barrack, Battlefield, Cemetery]
+
+whenInZone :: Field -> Zone -> Mask
+whenInZone fld zn = Mask fld $ Selection [Constraint Zone Eq $ enumToU8 zn]
