@@ -31,10 +31,6 @@ loadGame _ = return (basicLoadInfo, Game [] begin cards)
                          , (CardID (U8 4), dummyHero $ U8 2)
                          , (CardID (U8 5), dummyUnit $ U8 1)
                          , (CardID (U8 6), dummyUnit $ U8 2)
-                         , (CardID (U8 7), dummyUnit $ U8 1)
-                         , (CardID (U8 8), dummyUnit $ U8 2)
-                         , (CardID (U8 9), dummyUnit $ U8 1)
-                         , (CardID (U8 10), dummyUnit $ U8 2)
                          ]
 
 basicLoadInfo :: LoadInfo

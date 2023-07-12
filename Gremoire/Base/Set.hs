@@ -27,6 +27,8 @@ ruleCard
 dummyHero :: Owner -> Card
 dummyHero owner
   = mint
+  . discardAlteration (set SetID (U8 1))
+  . discardAlteration (set CardNum owner)
   . discardAlteration (set Power (U8 0))
   . discardAlteration (set Toughness (U8 5))
   . discardAlteration (set Owner owner)
@@ -39,6 +41,8 @@ dummyHero owner
 dummyUnit :: Owner -> Card
 dummyUnit owner
   = mint
+  . discardAlteration (set SetID (U8 1))
+  . discardAlteration (set CardNum $ owner + U8 2)
   . discardAlteration (set Power (U8 1))
   . discardAlteration (set Toughness (U8 2))
   . discardAlteration (set Owner owner)
@@ -149,7 +153,8 @@ players = [U8 1, U8 2]
 
 playerRuleCard :: Owner -> Card
 playerRuleCard owner
-  = discardAlteration (set Owner owner)
+  = discardAlteration (set Revealed (U8 1))
+  . discardAlteration (set Owner owner)
   . discardAlteration (set Nominated $ U8 0)
   . foldr (discardAlteration . equip) create
   $ abltys
